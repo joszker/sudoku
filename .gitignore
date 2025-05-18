@@ -1,0 +1,5 @@
+.fake
+.vs/
+.vscode/
+bin/
+obj/
