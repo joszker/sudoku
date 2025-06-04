@@ -7,12 +7,18 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="11.1.0" />
+    <PackageReference Include="Avalonia.FuncUI.Elmish" Version="1.5.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.0" />
     <PackageReference Include="Avalonia.FuncUI" Version="1.5.1" />
+    <PackageReference Include="Elmish" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="src\Program.fsx" />
+    <Compile Include="src\Pages.fs" />
+    <Compile Include="src\Menu.fs" />
+    <Compile Include="src\Sudoku.fs" />
+    <Compile Include="src\Solver.fs" />
+    <Compile Include="src\Main.fs" />
   </ItemGroup>
 
 </Project>
