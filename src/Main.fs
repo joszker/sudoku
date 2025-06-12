@@ -15,31 +15,56 @@ open Avalonia.Layout
 
 module Main =
     type State = { 
-        page: Pages.Page
+        page: App.Page
+        theme: App.Theme
         solver: Solver.State
+        puzzle: Puzzle.State
     }
 
     type Message = 
-        | NavigateTo of Pages.Page
+        | NavigateTo of App.Page
+        | SetPuzzle of int list
+        | ToggleTheme
         | SolverMessage of Solver.Message
+        | PuzzleMessage of Puzzle.Message
 
     let init () =
-        { page = Pages.MenuPage; solver = fst (Solver.init()) }, Cmd.none
+        { page = App.MenuPage; solver = Solver.init(); puzzle = Puzzle.init(); theme = App.darkTheme }, Cmd.none
 
     let update (msg: Message) (state: State) =
         match msg with
         | NavigateTo newPage -> { state with page = newPage }, Cmd.none
-        | SolverMessage sm -> { state with solver = fst (Solver.update sm state.solver) }, Cmd.none
+        | SetPuzzle puzzle -> { state with puzzle.sudoku = Sudoku.init_puzzle(puzzle) }, Cmd.none
+        | ToggleTheme -> { state with theme = (if state.theme.isLight then App.darkTheme else App.lightTheme) }, Cmd.none
+        | SolverMessage sm -> { state with solver = (Solver.update sm state.solver) }, Cmd.none
+        | PuzzleMessage pm -> { state with puzzle = (Puzzle.update pm state.puzzle) }, Cmd.none
 
 
     let view (state: State) (dispatch): IView =
 
         let navigate = (fun page -> dispatch (NavigateTo page))
 
-        match state.page with
-        | Pages.MenuPage -> Menu.view navigate
-        | Pages.SolverPage -> Solver.view state.solver (fun msg -> dispatch (SolverMessage msg)) navigate
+        let setPuzzle = (fun puzzle -> (
+            dispatch (SetPuzzle puzzle)
+            dispatch (NavigateTo App.PuzzlePage)
+        ))
 
+        let toggleTheme = (fun _ -> (
+            let app = Application.Current
+            app.RequestedThemeVariant <- (
+                if state.theme.isLight then
+                    Styling.ThemeVariant.Dark
+                else
+                    Styling.ThemeVariant.Light
+            )
+            dispatch ToggleTheme
+        ))
+
+        match state.page with
+        | App.MenuPage -> Menu.view navigate toggleTheme
+        | App.SolverPage -> Solver.view state.solver state.theme (fun msg -> dispatch (SolverMessage msg)) navigate
+        | App.PuzzleMenuPage -> PuzzleMenu.view setPuzzle navigate
+        | App.PuzzlePage -> Puzzle.view state.puzzle state.theme (fun msg -> dispatch (PuzzleMessage msg)) navigate
 
 
 
@@ -60,12 +85,12 @@ type MainWindow() as this =
         |> Program.withConsoleTrace
         |> Program.run
 
-type App() =
+type SudokuApp() =
     inherit Application()
 
     override this.Initialize() =
         this.Styles.Add (FluentTheme())
-        this.RequestedThemeVariant <- Styling.ThemeVariant.Light
+        this.RequestedThemeVariant <- Styling.ThemeVariant.Dark
 
     override this.OnFrameworkInitializationCompleted() =
         match this.ApplicationLifetime with
@@ -79,7 +104,7 @@ module Program =
     [<EntryPoint>]
     let main(args: string[]) =
         AppBuilder
-            .Configure<App>()
+            .Configure<SudokuApp>()
             .UsePlatformDetect()
             .UseSkia()
             .StartWithClassicDesktopLifetime(args)

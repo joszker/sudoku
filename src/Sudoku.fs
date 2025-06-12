@@ -31,7 +31,16 @@ type State = {
 let createEmptyBoard () : Board =
     List.init (9*9) (fun _ -> { digit = None; isEditable = true })
 
-let init () = { board = createEmptyBoard(); hovered = None; selected = None; }, Cmd.none
+let init () = { board = createEmptyBoard(); hovered = None; selected = None; }
+
+let init_puzzle (puzzle: int list): State =
+    let board: Board = puzzle |> List.map (fun digit ->
+        if digit = 0 then
+            { digit = None; isEditable = true; }
+        else
+            { digit = Some digit; isEditable = false; }
+    )
+    { board = board; hovered = None; selected = None; }
 
 type Message = 
     | UpdateCell of index: int * digit: int option
@@ -48,24 +57,13 @@ let update (msg: Message) (state: State) =
                     { cell with digit = newDigit }
                 else cell
             )
-        { state with board = newBoard }, Cmd.none
-    | SetHovered (index) -> { state with hovered = index }, Cmd.none
-    | SetSelection (index) -> { state with selected = index }, Cmd.none
+        { state with board = newBoard }
+    | SetHovered (index) -> { state with hovered = index }
+    | SetSelection (index) -> { state with selected = index }
 
-let view (state: State) (dispatch): IView =
+let view (state: State) (theme: App.Theme) (dispatch): IView =
 
     let cellSize = 40.0
-    let bgColor = Color.Parse "#101010"
-    let bgHoverColor = Color.Parse "#202020"
-    let bgSelectedColor = Color.Parse "#522F22"
-    let bgHighlightedColor = Color.Parse "#443028"//Color.Parse "#303030"
-    let bgUneditableColor = Color.Parse "#263238"
-    let innerBorderColor = Color.Parse "#804532"
-    let outerBorderColor = Color.Parse "#FF8A65"
-    let selectedBorderColor = Color.Parse "#FF8A65"
-    let digitColor = Colors.White
-    let uneditableDigitColor = Colors.Yellow
-
 
     Canvas.create [
         Canvas.width (cellSize * 9.0)
@@ -83,15 +81,15 @@ let view (state: State) (dispatch): IView =
 
                 Rectangle.fill (
                     if state.selected = Some index then
-                        SolidColorBrush(bgSelectedColor)
+                        SolidColorBrush(theme.bgSelected)
                     else if state.hovered = Some index then
-                        SolidColorBrush(bgHoverColor)
+                        SolidColorBrush(theme.bgHover)
                     else if state.selected.IsSome && cell.digit.IsSome && state.board[state.selected.Value].digit = cell.digit then
-                        SolidColorBrush(bgHighlightedColor)
+                        SolidColorBrush(theme.bgHighlighted)
                     else if not cell.isEditable then
-                        SolidColorBrush(bgUneditableColor)
+                        SolidColorBrush(theme.bgUneditable)
                     else
-                        SolidColorBrush(bgColor)
+                        SolidColorBrush(theme.bg)
                 )
 
                 Rectangle.horizontalAlignment HorizontalAlignment.Stretch
@@ -150,9 +148,9 @@ let view (state: State) (dispatch): IView =
                 TextBlock.isHitTestVisible false
                 TextBlock.foreground (
                     if cell.isEditable then
-                        Colors.White
+                        theme.digit
                     else
-                        Colors.Yellow
+                        theme.uneditableDigit
                 )
             ]
         )
@@ -162,7 +160,7 @@ let view (state: State) (dispatch): IView =
             Line.create [
                 Line.startPoint (Point(p, 0.0))
                 Line.endPoint (Point(p, cellSize * 9.0))
-                Line.stroke  (SolidColorBrush(innerBorderColor))
+                Line.stroke  (SolidColorBrush(theme.innerBorder))
                 Line.strokeThickness 1.0
             ]
         )
@@ -172,7 +170,7 @@ let view (state: State) (dispatch): IView =
             Line.create [
                 Line.startPoint (Point(0.0, p))
                 Line.endPoint (Point(cellSize * 9.0, p))
-                Line.stroke  (SolidColorBrush(innerBorderColor))
+                Line.stroke  (SolidColorBrush(theme.innerBorder))
                 Line.strokeThickness 1.0
             ]
         )
@@ -182,7 +180,7 @@ let view (state: State) (dispatch): IView =
             Line.create [
                 Line.startPoint (Point(p, 0.0))
                 Line.endPoint (Point(p, cellSize * 9.0))
-                Line.stroke  (SolidColorBrush(outerBorderColor))
+                Line.stroke  (SolidColorBrush(theme.outerBorder))
                 Line.strokeThickness 3.0
             ]
         )
@@ -192,7 +190,7 @@ let view (state: State) (dispatch): IView =
             Line.create [
                 Line.startPoint (Point(0.0, p))
                 Line.endPoint (Point(cellSize * 9.0, p))
-                Line.stroke  (SolidColorBrush(outerBorderColor))
+                Line.stroke  (SolidColorBrush(theme.outerBorder))
                 Line.strokeThickness 3.0
             ]
         )
@@ -207,7 +205,7 @@ let view (state: State) (dispatch): IView =
                     Rectangle.width cellSize
                     Rectangle.height cellSize
                     Rectangle.fill Colors.Transparent
-                    Rectangle.stroke outerBorderColor
+                    Rectangle.stroke theme.selectedBorder
                     Rectangle.strokeThickness 1.0
                     Rectangle.isHitTestVisible false
                 ]

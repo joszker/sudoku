@@ -12,7 +12,7 @@ open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.Layout
 
     
-let view (navigate): IView =
+let view (navigate) (toggleTheme): IView =
     Grid.create [
         Grid.rowDefinitions "*,Auto,*"
         Grid.children [
@@ -36,20 +36,20 @@ let view (navigate): IView =
                 StackPanel.verticalAlignment    VerticalAlignment.Center
                 StackPanel.children [
                     Button.create [
-                        Button.onClick (fun _ -> navigate Pages.SolverPage)
+                        Button.onClick (fun _ -> navigate App.PuzzleMenuPage)
                         Button.content "Puzzles"
                         Button.horizontalAlignment HorizontalAlignment.Stretch
                         Button.horizontalContentAlignment HorizontalAlignment.Center
                     ]
                     Button.create [
-                        Button.onClick (fun _ -> navigate Pages.SolverPage)
+                        Button.onClick (fun _ -> navigate App.SolverPage)
                         Button.content "Solver"
                         Button.horizontalAlignment HorizontalAlignment.Stretch
                         Button.horizontalContentAlignment HorizontalAlignment.Center
                     ]
                     Button.create [
-                        Button.onClick (fun _ -> navigate Pages.SolverPage)
-                        Button.content "Exit"
+                        Button.onClick (fun _ -> toggleTheme())
+                        Button.content "Toggle Theme"
                         Button.horizontalAlignment HorizontalAlignment.Stretch
                         Button.horizontalContentAlignment HorizontalAlignment.Center
                     ]

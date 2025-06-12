@@ -48,15 +48,15 @@ type Message =
     | Solve
     | Reset
 
-let init () = { sudoku = fst (Sudoku.init()) }, Cmd.none
+let init () = { sudoku = Sudoku.init() }
 
 let update (msg: Message) (state: State) =
     match msg with
-    | SudokuMessage sm -> { state with sudoku = fst (Sudoku.update sm state.sudoku) }, Cmd.none
-    | Solve -> { state with sudoku.board = (solve state.sudoku.board) }, Cmd.none
-    | Reset -> { state with sudoku.board = Sudoku.createEmptyBoard() }, Cmd.none
+    | SudokuMessage sm -> { state with sudoku = (Sudoku.update sm state.sudoku) }
+    | Solve -> { state with sudoku.board = (solve state.sudoku.board) }
+    | Reset -> { state with sudoku.board = Sudoku.createEmptyBoard() }
 
-let view (state: State) (dispatch: Message -> unit) (navigate): IView =
+let view (state: State) (theme: App.Theme) (dispatch: Message -> unit) (navigate): IView =
 
     Grid.create [
         Grid.children [
@@ -75,18 +75,18 @@ let view (state: State) (dispatch: Message -> unit) (navigate): IView =
                             if isSolved then "Solved" else "Unsolved"
                         )
                         TextBlock.foreground (
-                            if isSolved then Colors.Lime else Colors.White
+                            if isSolved then theme.green else theme.text
                         )
                         TextBlock.textAlignment TextAlignment.Center
                         TextBlock.horizontalAlignment HorizontalAlignment.Center
                         TextBlock.verticalAlignment VerticalAlignment.Center
                     ]
 
-                    Sudoku.view state.sudoku (fun msg -> dispatch (SudokuMessage msg))
+                    Sudoku.view state.sudoku theme (fun msg -> dispatch (SudokuMessage msg))
 
                     StackPanel.create [
                         StackPanel.orientation          Orientation.Horizontal
-                        StackPanel.spacing              50
+                        StackPanel.spacing              20
                         StackPanel.horizontalAlignment  HorizontalAlignment.Center
                         StackPanel.verticalAlignment    VerticalAlignment.Center
                         StackPanel.children [
@@ -96,19 +96,21 @@ let view (state: State) (dispatch: Message -> unit) (navigate): IView =
                                 Button.content "Solve"
                                 Button.horizontalAlignment HorizontalAlignment.Stretch
                                 Button.horizontalContentAlignment HorizontalAlignment.Center
+                                Button.width 170
                             ]
                             Button.create [
                                 Button.onClick (fun _ -> dispatch Reset)
                                 Button.content "Reset"
                                 Button.horizontalAlignment HorizontalAlignment.Stretch
                                 Button.horizontalContentAlignment HorizontalAlignment.Center
+                                Button.width 170
                             ]
                         ]
                     ]
                 ]
             ]
             Button.create [
-                Button.onClick (fun _ -> navigate Pages.MenuPage)
+                Button.onClick (fun _ -> navigate App.MenuPage)
                 Button.content "← Go Back"
                 Button.horizontalAlignment HorizontalAlignment.Left
                 Button.verticalAlignment VerticalAlignment.Top

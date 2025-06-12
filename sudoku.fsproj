@@ -14,10 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="src\Pages.fs" />
+    <Compile Include="src\App.fs" />
     <Compile Include="src\Menu.fs" />
     <Compile Include="src\Sudoku.fs" />
     <Compile Include="src\Solver.fs" />
+    <Compile Include="src\PuzzleMenu.fs" />
+    <Compile Include="src\Puzzle.fs" />
     <Compile Include="src\Main.fs" />
   </ItemGroup>
 
